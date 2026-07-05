@@ -25,9 +25,9 @@ function Navbar() {
     <nav className="sticky top-0 z-50 glass rounded-none border-t-0 border-l-0 border-r-0 border-b border-slate-700/50 mb-8">
       <div className="max-w-6xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center gap-2 text-primary">
-            <Trophy className="w-6 h-6" />
-            <span className="text-xl font-bold tracking-tight text-white">LongHoang88<span className="text-primary">Bet</span></span>
+          <div className="flex items-center gap-2">
+            <img src="/LongHoangF8BET.png" alt="Logo" className="w-10 h-10 object-contain rounded-lg" />
+            <span className="text-xl font-bold tracking-tight text-white">LongHoangF8BET</span>
           </div>
           
           <div className="flex gap-1 items-center">
