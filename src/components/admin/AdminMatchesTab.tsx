@@ -238,101 +238,103 @@ export default function AdminMatchesTab() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="glass p-6 flex flex-col md:flex-row items-center justify-between gap-6"
+            className="glass p-6 flex flex-col gap-6"
           >
-            <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className={`badge ${
-                  match.status === 'PENDING' ? 'badge-pending' :
-                  match.status === 'OPEN' ? 'badge-open' : 
-                  match.status === 'LOCKED' ? 'badge-locked' : 'badge-settled'
-                }`}>
-                  {match.status === 'PENDING' ? 'CHƯA MỞ' : match.status === 'OPEN' ? 'MỞ DỰ ĐOÁN' : match.status === 'LOCKED' ? 'ĐÃ KHÓA' : 'ĐÃ CHỐT'}
-                </span>
-                <span className="text-xs text-slate-400">{new Date(match.matchTime).toLocaleString('vi-VN')}</span>
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex-1 w-full">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`badge ${
+                    match.status === 'PENDING' ? 'badge-pending' :
+                    match.status === 'OPEN' ? 'badge-open' : 
+                    match.status === 'LOCKED' ? 'badge-locked' : 'badge-settled'
+                  }`}>
+                    {match.status === 'PENDING' ? 'CHƯA MỞ' : match.status === 'OPEN' ? 'MỞ DỰ ĐOÁN' : match.status === 'LOCKED' ? 'ĐÃ KHÓA' : 'ĐÃ CHỐT'}
+                  </span>
+                  <span className="text-xs text-slate-400">{new Date(match.matchTime).toLocaleString('vi-VN')}</span>
+                </div>
+                <div className="text-xl font-bold">
+                  {match.teamA} <span className="text-slate-500 mx-2">vs</span> {match.teamB}
+                </div>
               </div>
-              <div className="text-xl font-bold">
-                {match.teamA} <span className="text-slate-500 mx-2">vs</span> {match.teamB}
-              </div>
-            </div>
 
-            <div className="flex gap-4 w-full md:w-auto">
-              {match.status === 'OPEN' && (
-                <button 
-                  onClick={() => lockMutation.mutate(match.id)}
-                  disabled={lockMutation.isPending}
-                  className="btn-primary flex items-center gap-2 flex-1 md:flex-none justify-center"
-                >
-                  <Lock className="w-4 h-4" /> Khóa dự đoán
-                </button>
-              )}
-              
-              {match.status === 'LOCKED' && (
-                <div className="flex flex-col gap-2 w-full">
-                  <div className="flex gap-2">
-                    {['Đội thắng', 'Đội có ít cú vô-lê hơn', 'Đội vô địch'].includes(match.criterionLabel || 'Đội thắng') ? (
-                      <select 
-                        value={results[match.id]?.finalResult || ''}
-                        onChange={(e) => setResults({...results, [match.id]: { ...results[match.id], finalResult: e.target.value }})}
-                        className="glass-input flex-1"
+              <div className="flex gap-4 w-full md:w-auto">
+                {match.status === 'OPEN' && (
+                  <button 
+                    onClick={() => lockMutation.mutate(match.id)}
+                    disabled={lockMutation.isPending}
+                    className="btn-primary flex items-center gap-2 flex-1 md:flex-none justify-center"
+                  >
+                    <Lock className="w-4 h-4" /> Khóa dự đoán
+                  </button>
+                )}
+                
+                {match.status === 'LOCKED' && (
+                  <div className="flex flex-col gap-2 w-full min-w-[250px]">
+                    <div className="flex gap-2">
+                      {['Đội thắng', 'Đội có ít cú vô-lê hơn', 'Đội vô địch'].includes(match.criterionLabel || 'Đội thắng') ? (
+                        <select 
+                          value={results[match.id]?.finalResult || ''}
+                          onChange={(e) => setResults({...results, [match.id]: { ...results[match.id], finalResult: e.target.value }})}
+                          className="glass-input flex-1"
+                        >
+                          <option value="">-- Chọn đội --</option>
+                          <option value={match.teamA}>{match.teamA}</option>
+                          <option value={match.teamB}>{match.teamB}</option>
+                        </select>
+                      ) : (
+                        <input 
+                          type="number"
+                          placeholder="Nhập con số (VD: 2)"
+                          value={results[match.id]?.finalResult || ''}
+                          onChange={(e) => setResults({...results, [match.id]: { ...results[match.id], finalResult: e.target.value }})}
+                          className="glass-input flex-1"
+                        />
+                      )}
+                      <button 
+                        onClick={() => {
+                          const result = results[match.id];
+                          if (!result?.finalResult) {
+                            toast.error('Vui lòng chọn đội thắng chung cuộc');
+                            return;
+                          }
+                          settleMutation.mutate({ 
+                            id: match.id, 
+                            finalResult: result.finalResult,
+                            finalNote: result.finalNote || ''
+                          });
+                        }}
+                        disabled={settleMutation.isPending}
+                        className="btn-success flex items-center gap-2"
                       >
-                        <option value="">-- Chọn đội --</option>
-                        <option value={match.teamA}>{match.teamA}</option>
-                        <option value={match.teamB}>{match.teamB}</option>
-                      </select>
-                    ) : (
-                      <input 
-                        type="number"
-                        placeholder="Nhập con số (VD: 2)"
-                        value={results[match.id]?.finalResult || ''}
-                        onChange={(e) => setResults({...results, [match.id]: { ...results[match.id], finalResult: e.target.value }})}
-                        className="glass-input flex-1"
-                      />
-                    )}
-                    <button 
-                      onClick={() => {
-                        const result = results[match.id];
-                        if (!result?.finalResult) {
-                          toast.error('Vui lòng chọn đội thắng chung cuộc');
-                          return;
-                        }
-                        settleMutation.mutate({ 
-                          id: match.id, 
-                          finalResult: result.finalResult,
-                          finalNote: result.finalNote || ''
-                        });
-                      }}
-                      disabled={settleMutation.isPending}
-                      className="btn-success flex items-center gap-2"
-                    >
-                      <CheckCircle className="w-4 h-4" /> Chốt
-                    </button>
-                  </div>
-                  <input 
-                    type="text" 
-                    placeholder="Ghi chú (VD: Bỉ 3 thẻ, Senegal 5 thẻ)"
-                    value={results[match.id]?.finalNote || ''}
-                    onChange={(e) => setResults({...results, [match.id]: { ...results[match.id], finalNote: e.target.value }})}
-                    className="glass-input w-full text-sm"
-                  />
-                </div>
-              )}
-              
-              {match.status === 'SETTLED' && (
-                <div className="flex flex-col gap-2 w-full md:w-auto">
-                  <div className="text-emerald-400 font-bold px-4 py-2 border border-emerald-500/30 rounded-lg bg-emerald-500/10 text-center">
-                    Kết quả: {match.finalResult}
-                  </div>
-                  {match.finalNote && (
-                    <div className="text-xs text-slate-400 bg-slate-800/50 p-2 rounded-lg text-center border border-slate-700/50">
-                      Ghi chú: {match.finalNote}
+                        <CheckCircle className="w-4 h-4" /> Chốt
+                      </button>
                     </div>
-                  )}
-                </div>
-              )}
+                    <input 
+                      type="text" 
+                      placeholder="Ghi chú (VD: Bỉ 3 thẻ, Senegal 5 thẻ)"
+                      value={results[match.id]?.finalNote || ''}
+                      onChange={(e) => setResults({...results, [match.id]: { ...results[match.id], finalNote: e.target.value }})}
+                      className="glass-input w-full text-sm"
+                    />
+                  </div>
+                )}
+                
+                {match.status === 'SETTLED' && (
+                  <div className="flex flex-col gap-2 w-full md:w-auto">
+                    <div className="text-emerald-400 font-bold px-4 py-2 border border-emerald-500/30 rounded-lg bg-emerald-500/10 text-center">
+                      Kết quả: {match.finalResult}
+                    </div>
+                    {match.finalNote && (
+                      <div className="text-xs text-slate-400 bg-slate-800/50 p-2 rounded-lg text-center border border-slate-700/50">
+                        Ghi chú: {match.finalNote}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
             
-            <div className="w-full mt-4 border-t border-slate-700/50 pt-4 flex flex-col items-center">
+            <div className="w-full border-t border-slate-700/50 pt-4 flex flex-col items-center">
               <button 
                 onClick={() => {
                   const newSet = new Set(expandedMatches);
