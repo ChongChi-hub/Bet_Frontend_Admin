@@ -102,6 +102,17 @@ export default function AdminMatchesTab() {
       return;
     }
     
+    // Prevent duplicate match in the same stage
+    const isDuplicate = matches?.some(m => 
+      m.matchStage === matchStage && 
+      ((m.teamA === teamA && m.teamB === teamB) || (m.teamA === teamB && m.teamB === teamA))
+    );
+    
+    if (isDuplicate) {
+      toast.error('Trận đấu giữa 2 đội này trong vòng này đã tồn tại!');
+      return;
+    }
+    
     const prizeNum = parseFloat(prizePool) || 0;
 
     createMutation.mutate({
