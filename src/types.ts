@@ -11,13 +11,14 @@ export interface Match {
   id: number;
   teamA: string;
   teamB: string;
+  openTime?: string;
   matchTime: string;
   prizePool: number;
-  matchStage: string;
-  criterionType: string | null;
-  criterionLabel: string | null;
-  status: 'OPEN' | 'LOCKED' | 'SETTLED';
-  finalResult: string | null;
+  matchStage?: string;
+  criterionType?: string;
+  criterionLabel?: string;
+  status: 'PENDING' | 'OPEN' | 'LOCKED' | 'SETTLED';
+  finalResult?: string;
   finalNote?: string;
 }
 

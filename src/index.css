@@ -31,6 +31,9 @@ body {
   @apply px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase;
 }
 
+.badge-pending {
+  @apply bg-slate-700/50 text-slate-300 border border-slate-600/50;
+}
 .badge-open {
   @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
 }

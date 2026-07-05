@@ -8,12 +8,41 @@ import toast from 'react-hot-toast';
 import AutocompleteInput from '../AutocompleteInput';
 import { WORLD_CUP_TEAMS } from '../../lib/flags';
 
+function MatchPredictions({ matchId }: { matchId: number }) {
+  const { data: predictions, isLoading } = useQuery<{userName: string, predictedValue: string}[]>({
+    queryKey: ['admin-match-predictions', matchId],
+    queryFn: async () => {
+      const res = await api.get(`/admin/matches/${matchId}/predictions`);
+      return res.data;
+    }
+  });
+
+  if (isLoading) return <div className="text-sm text-slate-400 mt-4">Đang tải...</div>;
+  if (!predictions?.length) return <div className="text-sm text-slate-400 mt-4">Chưa có ai dự đoán.</div>;
+
+  return (
+    <div className="mt-4 p-4 bg-slate-800/40 rounded-lg border border-slate-700/50 w-full">
+      <h4 className="text-sm font-bold text-slate-300 mb-3">Danh sách dự đoán ({predictions.length}):</h4>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        {predictions.map((p, i) => (
+          <div key={i} className="text-sm bg-slate-900/50 p-2.5 rounded-lg flex justify-between items-center border border-slate-700/30">
+            <span className="text-slate-300 truncate pr-2">{p.userName}</span>
+            <span className="font-bold text-emerald-400 shrink-0">{p.predictedValue}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminMatchesTab() {
   const queryClient = useQueryClient();
   const [results, setResults] = useState<Record<number, { finalResult: string, finalNote: string }>>({});
+  const [expandedMatches, setExpandedMatches] = useState<Set<number>>(new Set());
   
   const [teamA, setTeamA] = useState('');
   const [teamB, setTeamB] = useState('');
+  const [openTime, setOpenTime] = useState('');
   const [matchTime, setMatchTime] = useState('');
   const [matchStage, setMatchStage] = useState('Vòng bảng');
   const [prizePool, setPrizePool] = useState<string>('0');
@@ -34,6 +63,7 @@ export default function AdminMatchesTab() {
       toast.success('Tạo trận đấu thành công!');
       setTeamA('');
       setTeamB('');
+      setOpenTime('');
       setMatchTime('');
       setMatchStage('Vòng bảng');
       setPrizePool('0');
@@ -77,6 +107,7 @@ export default function AdminMatchesTab() {
     createMutation.mutate({
       teamA,
       teamB,
+      openTime: openTime ? openTime : undefined,
       matchTime,
       prizePool: prizeNum,
       matchStage,
@@ -139,7 +170,11 @@ export default function AdminMatchesTab() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-slate-400 mb-1">Thời gian thi đấu</label>
+            <label className="block text-xs font-medium text-slate-400 mb-1">Thời gian mở dự đoán (Tùy chọn)</label>
+            <input type="datetime-local" value={openTime} onChange={e => setOpenTime(e.target.value)} className="glass-input" />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-400 mb-1">Thời gian bắt đầu trận</label>
             <input type="datetime-local" value={matchTime} onChange={e => setMatchTime(e.target.value)} className="glass-input" required />
           </div>
           <div>
@@ -197,10 +232,11 @@ export default function AdminMatchesTab() {
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
                 <span className={`badge ${
+                  match.status === 'PENDING' ? 'badge-pending' :
                   match.status === 'OPEN' ? 'badge-open' : 
                   match.status === 'LOCKED' ? 'badge-locked' : 'badge-settled'
                 }`}>
-                  {match.status === 'OPEN' ? 'MỞ DỰ ĐOÁN' : match.status === 'LOCKED' ? 'ĐÃ KHÓA' : 'ĐÃ CHỐT'}
+                  {match.status === 'PENDING' ? 'CHƯA MỞ' : match.status === 'OPEN' ? 'MỞ DỰ ĐOÁN' : match.status === 'LOCKED' ? 'ĐÃ KHÓA' : 'ĐÃ CHỐT'}
                 </span>
                 <span className="text-xs text-slate-400">{new Date(match.matchTime).toLocaleString('vi-VN')}</span>
               </div>
@@ -283,6 +319,21 @@ export default function AdminMatchesTab() {
                   )}
                 </div>
               )}
+            </div>
+            
+            <div className="w-full mt-4 border-t border-slate-700/50 pt-4 flex flex-col items-center">
+              <button 
+                onClick={() => {
+                  const newSet = new Set(expandedMatches);
+                  if (newSet.has(match.id)) newSet.delete(match.id);
+                  else newSet.add(match.id);
+                  setExpandedMatches(newSet);
+                }}
+                className="text-sm text-primary hover:text-blue-400 transition-colors"
+              >
+                {expandedMatches.has(match.id) ? 'Ẩn danh sách dự đoán' : 'Xem danh sách dự đoán'}
+              </button>
+              {expandedMatches.has(match.id) && <MatchPredictions matchId={match.id} />}
             </div>
           </motion.div>
         ))}
