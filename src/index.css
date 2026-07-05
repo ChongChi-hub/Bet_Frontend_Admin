@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #3b82f6;
+  --color-dark: #0f172a;
+  --color-dark-lighter: #1e293b;
+  --color-accent: #10b981;
+}
+
+body {
+  @apply bg-dark text-slate-200 antialiased min-h-screen font-sans;
+}
+
+.glass {
+  @apply bg-dark-lighter/60 backdrop-blur-md border border-slate-700/50 shadow-xl rounded-2xl;
+}
+
+.glass-input {
+  @apply bg-dark/50 border border-slate-600 rounded-lg px-4 py-2 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-slate-200 w-full;
+}
+
+.btn-primary {
+  @apply bg-primary hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-success {
+  @apply bg-accent hover:bg-emerald-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.badge {
+  @apply px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase;
+}
+
+.badge-open {
+  @apply bg-emerald-500/20 text-emerald-400 border border-emerald-500/30;
+}
+.badge-locked {
+  @apply bg-amber-500/20 text-amber-400 border border-amber-500/30;
+}
+.badge-settled {
+  @apply bg-slate-500/20 text-slate-400 border border-slate-500/30;
+}
