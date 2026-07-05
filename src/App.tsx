@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Trophy, Settings, LogOut, KeyRound } from 'lucide-react';
+import { Settings, LogOut, KeyRound } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 import AdminPage from './pages/AdminPage';
